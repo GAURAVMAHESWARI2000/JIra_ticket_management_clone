@@ -56,6 +56,12 @@ body{
     border-radius: 2px;
 }
 
+.color:hover{
+    cursor: pointer;
+    border:0.5px solid red;
+
+}
+
 .lightpink{
     background-color: lightpink;
 }
@@ -129,6 +135,11 @@ body{
     height: 1rem;
 }
 
+.ticket-color:hover{
+    cursor: pointer;
+}
+
+
 .ticket-id{
     height: 2rem;
     /* background-color: lightgreen; */
@@ -148,6 +159,10 @@ body{
     padding-right:1rem ;
     justify-content: flex-end;
     color: #a5b1c2;
+}
+
+.ticket-lock:hover{
+    cursor: pointer;
 }
 
 .main-cont{

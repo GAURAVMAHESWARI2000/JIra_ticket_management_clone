@@ -17,6 +17,13 @@ let lockClass = "fa-lock"
 let unlockClass = "fa-lock-open"
 
 let ticketsArr = []
+// localStorage.clear()
+if(localStorage.getItem("jira_tickets")){
+    ticketsArr = JSON.parse(localStorage.getItem("jira_tickets"))
+    ticketsArr.forEach((ticketObj ,idx )=>{
+        createTicket(ticketObj.ticketColor,ticketObj.ticketTask,ticketObj.ticketId)
+    })
+} 
 
 //listener for toolbox priority color
 for(let i=0;i<toolBoxColors.length;i++){
@@ -108,29 +115,39 @@ function createTicket(ticketColor,ticketTask,ticketId){
     `
 
     mainCont.appendChild(ticketCont)
-    if(!ticketId)  ticketsArr.push({ticketColor,ticketTask,ticketId:id})
+    if(!ticketId){
+        ticketsArr.push({ticketColor,ticketTask,ticketId:id})
+        localStorage.setItem("jira_tickets",JSON.stringify(ticketsArr)) 
+    }
     handleRemoval(ticketCont,id)
-    handleLock(ticketCont)
+    handleLock(ticketCont,id)
     handleColor(ticketCont,id)
 }
 
 function handleRemoval(ticket,id){
     ticket.addEventListener("click",function(e){
         if(removeFlag) {
-            ticket.remove()
-            let newticketsArr = ticketsArr.filter((ticketObj,ind)=>{
-                return id != ticketObj.ticketId
-            })
-            ticketsArr = newticketsArr
+            ticket.remove()  //removal from ui
+
+            //removal from db
+            let ticketIdx = getTicketIndex(id)
+            ticketsArr.splice(ticketIdx,1)   //will remove 1 value in array from idx
+            localStorage.setItem("jira_tickets",JSON.stringify(ticketsArr)) 
+
+            // let newticketsArr = ticketsArr.filter((ticketObj,ind)=>{
+            //     return id != ticketObj.ticketId
+            // })
+            // ticketsArr = newticketsArr
         }
     })
 }
 
-function handleLock(ticket){
+function handleLock(ticket,id){
     let ticketLockElem = ticket.querySelector(".ticket-lock")
     let ticketLock = ticketLockElem.children[0]
     let ticketTaskArea = ticket.querySelector(".task-area")
     ticketLock.addEventListener("click",function(e){
+        let ticketIdx = getTicketIndex(id)
         if(ticketLock.classList.contains(lockClass)){
             ticketLock.classList.remove(lockClass)
             ticketLock.classList.add(unlockClass)
@@ -139,8 +156,11 @@ function handleLock(ticket){
             ticketLock.classList.remove(unlockClass)
             ticketLock.classList.add(lockClass)
             ticketTaskArea.setAttribute("contenteditable","false")
-
         }
+
+        //modify data in local storage (ticket task)
+        ticketsArr[ticketIdx].ticketTask = ticketTaskArea.innerText
+        localStorage.setItem("jira_tickets",JSON.stringify(ticketsArr)) 
     })
 }
 //contenteditable is an attribute :
@@ -159,13 +179,25 @@ function handleColor(ticket,id){
         let newTicketColor = colors[newTicketColorIdx]
         ticketColor.classList.remove(currentTicketColor)
         ticketColor.classList.add(newTicketColor)
+        
+        //get ticket color index to modify that in local storage
+        let ticketIdx = getTicketIndex(id)
+        ticketsArr[ticketIdx].ticketColor = newTicketColor
+        localStorage.setItem("jira_tickets",JSON.stringify(ticketsArr)) 
 
-        for(let i=0;i<ticketsArr.length;i++){
-           if(id == ticketsArr[i].ticketId){
-               ticketsArr[i].ticketColor = newTicketColor
-           }
-        }
+        // for(let i=0;i<ticketsArr.length;i++){
+        //    if(id == ticketsArr[i].ticketId){
+        //        ticketsArr[i].ticketColor = newTicketColor
+        //    }
+        // }
     })
+}
+
+function getTicketIndex(id){
+    let ticketIdx = ticketsArr.findIndex(function(ticketObj){
+        return ticketObj.ticketId === id
+    })
+    return ticketIdx
 }
 
 function setModalToDefault(){
