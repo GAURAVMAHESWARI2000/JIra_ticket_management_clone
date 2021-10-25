@@ -109,14 +109,21 @@ function createTicket(ticketColor,ticketTask,ticketId){
 
     mainCont.appendChild(ticketCont)
     if(!ticketId)  ticketsArr.push({ticketColor,ticketTask,ticketId:id})
-
-    handleRemoval(ticketCont)
+    handleRemoval(ticketCont,id)
     handleLock(ticketCont)
-    handleColor(ticketCont)
+    handleColor(ticketCont,id)
 }
 
-function handleRemoval(ticket){
-    if(removeFlag) ticket.remove()
+function handleRemoval(ticket,id){
+    ticket.addEventListener("click",function(e){
+        if(removeFlag) {
+            ticket.remove()
+            let newticketsArr = ticketsArr.filter((ticketObj,ind)=>{
+                return id != ticketObj.ticketId
+            })
+            ticketsArr = newticketsArr
+        }
+    })
 }
 
 function handleLock(ticket){
@@ -137,11 +144,11 @@ function handleLock(ticket){
     })
 }
 //contenteditable is an attribute :
-//true -> content of task area can be edited
-//false -> content of task area can not be edited
+//true -> content of textarea can be edited
+//false -> content of textarea can not be edited
 
 
-function handleColor(ticket){
+function handleColor(ticket,id){
     let ticketColor = ticket.querySelector(".ticket-color")
     ticketColor.addEventListener("click",function(e){
         let currentTicketColor = ticketColor.classList[1]
@@ -152,6 +159,12 @@ function handleColor(ticket){
         let newTicketColor = colors[newTicketColorIdx]
         ticketColor.classList.remove(currentTicketColor)
         ticketColor.classList.add(newTicketColor)
+
+        for(let i=0;i<ticketsArr.length;i++){
+           if(id == ticketsArr[i].ticketId){
+               ticketsArr[i].ticketColor = newTicketColor
+           }
+        }
     })
 }
 
